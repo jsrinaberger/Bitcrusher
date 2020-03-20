@@ -1,12 +1,4 @@
-/*
-  ==============================================================================
 
-    This file was auto-generated!
-
-    It contains the basic framework code for a JUCE plugin editor.
-
-  ==============================================================================
-*/
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
@@ -35,7 +27,7 @@ BitCrusherAudioProcessorEditor::BitCrusherAudioProcessorEditor (BitCrusherAudioP
     sampleRateSlider.setSliderStyle(Slider::SliderStyle::Rotary);
     sampleRateSlider.setTextBoxStyle(Slider::TextBoxBelow, true, 50, 20);
     sampleRateSlider.setTextBoxIsEditable(true);
-    sampleRateSlider.setRange(1, 16, 1.f);
+    sampleRateSlider.setRange(1, 100, 1.f);
     sampleRateSlider.setValue(1);
     addAndMakeVisible(&sampleRateSlider);
 

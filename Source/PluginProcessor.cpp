@@ -1,12 +1,4 @@
-/*
-  ==============================================================================
 
-    This file was auto-generated!
-
-    It contains the basic framework code for a JUCE plugin processor.
-
-  ==============================================================================
-*/
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
@@ -155,19 +147,16 @@ void BitCrusherAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuf
 
         if (reductionType != 0)
         {
-            int bitRate = pow(2, sampleRateReduction);
-            int step = getSampleRate() / bitRate;
-
             float holdSample = channelData[0];
 
             for (int sample = 0; sample < buffer.getNumSamples(); sample++)
             {
-                if ((sample + step) % step == 0)
+                if ((sample + sampleRateReduction) % sampleRateReduction == 0)
                 {
                     holdSample = channelData[sample];
                 }
 
-                channelData[sample] = holdSample;
+                channelData[sample] = ((1 - blend) * channelData[sample]) +  (holdSample * blend);
             }
         }
     }
@@ -212,7 +201,7 @@ AudioProcessorValueTreeState::ParameterLayout BitCrusherAudioProcessor::createPa
     auto bitDepthParam = std::make_unique<AudioParameterFloat>("bit depth", "Bit Depth", 1.f , 16.f, 16.f);
     parameters.push_back(std::move(bitDepthParam));
 
-    auto sampleRateparam = std::make_unique<AudioParameterFloat>("sample rate", "Sample Rate", 1.f, 16.f, 1.f);
+    auto sampleRateparam = std::make_unique<AudioParameterFloat>("sample rate", "Sample Rate", 1.f, 100, 1.f);
     parameters.push_back(std::move(sampleRateparam));
 
     auto blendParam = std::make_unique<AudioParameterFloat>("blend", "Blend", 0.f, 1.f, 1.f);
@@ -242,7 +231,7 @@ float BitCrusherAudioProcessor::processSample(float sample, int bitMultiplier)
 
     if (reductionType == 0)
     {
-        effectedSample = (float)(ceil((effectedSample + 1.0) * bitMultiplier));
+        effectedSample = (float)(round((effectedSample + 1.0) * bitMultiplier));
         effectedSample = effectedSample / bitMultiplier - 1.0;
     }
 
