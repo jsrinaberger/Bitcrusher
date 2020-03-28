@@ -18,7 +18,6 @@ BitCrusherAudioProcessorEditor::BitCrusherAudioProcessorEditor (BitCrusherAudioP
     bitDepthSlider.setTextBoxStyle(Slider::TextBoxBelow, true, 50, 20);
     bitDepthSlider.setTextBoxIsEditable(true);
     bitDepthSlider.setRange(1, 16, 1.f);
-    bitDepthSlider.setValue(16);
     addAndMakeVisible(&bitDepthSlider);
 
 
@@ -28,7 +27,6 @@ BitCrusherAudioProcessorEditor::BitCrusherAudioProcessorEditor (BitCrusherAudioP
     sampleRateSlider.setTextBoxStyle(Slider::TextBoxBelow, true, 50, 20);
     sampleRateSlider.setTextBoxIsEditable(true);
     sampleRateSlider.setRange(1, 100, 1.f);
-    sampleRateSlider.setValue(1);
     addAndMakeVisible(&sampleRateSlider);
 
 
@@ -38,7 +36,6 @@ BitCrusherAudioProcessorEditor::BitCrusherAudioProcessorEditor (BitCrusherAudioP
     blendSlider.setTextBoxStyle(Slider::TextBoxBelow, true, 50, 20);
     blendSlider.setTextBoxIsEditable(true);
     blendSlider.setRange(0.f, 1.f, .001f);
-    blendSlider.setValue(1.f);
     addAndMakeVisible(&blendSlider);
 
 
@@ -48,13 +45,16 @@ BitCrusherAudioProcessorEditor::BitCrusherAudioProcessorEditor (BitCrusherAudioP
     masterGainSlider.setTextBoxStyle(Slider::TextBoxBelow, true, 50, 20);
     masterGainSlider.setTextBoxIsEditable(true);
     masterGainSlider.setRange(-60.f, 0.f, 0.01f);
-    masterGainSlider.setValue(0.f);
     addAndMakeVisible(&masterGainSlider);
 
 
-    reductionTypeButton.setToggleState(false, dontSendNotification);
-    reductionTypeButton.onClick = [&]() { reductionTypeButtonClicked(); };
-    addAndMakeVisible(&reductionTypeButton);
+    bitReductionToggleButton.setToggleState(false, dontSendNotification);
+    bitReductionToggleButton.onClick = [&]() { bitReductionButtonClicked(); };
+    addAndMakeVisible(&bitReductionToggleButton);
+
+    downSampleToggleButton.setToggleState(false, dontSendNotification);
+    downSampleToggleButton.onClick = [&]() { downSampleButtonClicked(); };
+    addAndMakeVisible(&downSampleToggleButton);
 }
 
 BitCrusherAudioProcessorEditor::~BitCrusherAudioProcessorEditor()
@@ -67,7 +67,8 @@ void BitCrusherAudioProcessorEditor::paint (Graphics& g)
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (getLookAndFeel().findColour (ResizableWindow::backgroundColourId));
 
-    reductionTypeButton.setBounds(getWidth() / 2 - 250, getHeight() / 2 - 50, 100, 100);
+    bitReductionToggleButton.setBounds(getWidth() / 2 - 250, getHeight() / 2 - 80, 100, 100);
+    downSampleToggleButton.setBounds(getWidth() / 2 - 250, getHeight() / 2 - 10, 100, 100);
     bitDepthSlider.setBounds(getWidth() / 2 - 150, getHeight() / 2 - 50, 100, 100);
     sampleRateSlider.setBounds(getWidth() / 2 - 50, getHeight() / 2 - 50, 100, 100);
     blendSlider.setBounds(getWidth() / 2 + 50, getHeight() / 2 - 50, 100, 100);
@@ -80,20 +81,38 @@ void BitCrusherAudioProcessorEditor::resized()
     // subcomponents in your editor..
 }
 
-void BitCrusherAudioProcessorEditor::reductionTypeButtonClicked()
+void BitCrusherAudioProcessorEditor::bitReductionButtonClicked()
 {
-    auto* reductionTypeParam = processor.apvst.getParameter("reduction type");
+    auto* bitReductionParam = processor.apvst.getParameter("bit reduction on/off");
 
-    if (*(processor.apvst.getRawParameterValue("reduction type")) == 0)
+    if (*(processor.apvst.getRawParameterValue("bit reduction on/off")) == 0)
     {
-        reductionTypeParam->beginChangeGesture();
-        reductionTypeParam->setValueNotifyingHost(1.f);
-        reductionTypeParam->endChangeGesture();
+        bitReductionParam->beginChangeGesture();
+        bitReductionParam->setValueNotifyingHost(1.f);
+        bitReductionParam->endChangeGesture();
     }
     else
     {
-        reductionTypeParam->beginChangeGesture();
-        reductionTypeParam->setValueNotifyingHost(0.f);
-        reductionTypeParam->endChangeGesture();
+        bitReductionParam->beginChangeGesture();
+        bitReductionParam->setValueNotifyingHost(0.f);
+        bitReductionParam->endChangeGesture();
+    }
+}
+
+void BitCrusherAudioProcessorEditor::downSampleButtonClicked()
+{
+    auto* downSampleParam = processor.apvst.getParameter("down sample on/off");
+
+    if (*(processor.apvst.getRawParameterValue("down sample on/off")) == 0)
+    {
+        downSampleParam->beginChangeGesture();
+        downSampleParam->setValueNotifyingHost(1.f);
+        downSampleParam->endChangeGesture();
+    }
+    else
+    {
+        downSampleParam->beginChangeGesture();
+        downSampleParam->setValueNotifyingHost(0.f);
+        downSampleParam->endChangeGesture();
     }
 }

@@ -28,9 +28,11 @@ private:
     Slider blendSlider;
     Slider masterGainSlider;
 
-    ToggleButton reductionTypeButton{ "Switch Reduction Type" };
+    ToggleButton bitReductionToggleButton{ "Bit Reduction" };
+    ToggleButton downSampleToggleButton{ "Down Sample" };
 
-    void reductionTypeButtonClicked();
+    void bitReductionButtonClicked();
+    void downSampleButtonClicked();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BitCrusherAudioProcessorEditor)
 

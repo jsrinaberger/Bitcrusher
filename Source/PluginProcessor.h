@@ -56,7 +56,8 @@ private:
     float blend;
     float masterGain;
 
-    int reductionType;
+    int bitReductionOn;
+    int downSampleOn;
 
     AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 

@@ -145,7 +145,7 @@ void BitCrusherAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuf
             channelData[sample] = processSample(channelData[sample], bitMultiplier);
         }
 
-        if (reductionType != 0)
+        if (downSampleOn == 1)
         {
             float holdSample = channelData[0];
 
@@ -176,15 +176,22 @@ AudioProcessorEditor* BitCrusherAudioProcessor::createEditor()
 //==============================================================================
 void BitCrusherAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
+    auto currentState = apvst.copyState();
+    std::unique_ptr<XmlElement> xmlInfo(currentState.createXml());
+    copyXmlToBinary(*xmlInfo, destData);
 }
 
 void BitCrusherAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
+    std::unique_ptr<XmlElement> xmlInfo(getXmlFromBinary(data, sizeInBytes));
+
+    if (xmlInfo.get() != nullptr)
+    {
+        if (xmlInfo->hasTagName(apvst.state.getType()))
+        {
+            apvst.replaceState(ValueTree::fromXml(*xmlInfo));
+        }
+    }
 }
 
 //==============================================================================
@@ -210,8 +217,11 @@ AudioProcessorValueTreeState::ParameterLayout BitCrusherAudioProcessor::createPa
     auto masterGainParam = std::make_unique<AudioParameterFloat>("master gain", "Mater Gain", -60.f, 0.f, 0.f);
     parameters.push_back(std::move(masterGainParam));
 
-    auto reductionTypeParam = std::make_unique<AudioParameterFloat>("reduction type", "Reduction Type", 0.f, 1.f, 0.f);
-    parameters.push_back(std::move(reductionTypeParam));
+    auto bitReductionParam = std::make_unique<AudioParameterFloat>("bit reduction on/off", "Bit Reduction On/off", 0.f, 1.f, 0.f);
+    parameters.push_back(std::move(bitReductionParam));
+
+    auto downSampleOnParam = std::make_unique<AudioParameterFloat>("down sample on/off", "Down Sample On/off", 0.f, 1.f, 0.f);
+    parameters.push_back(std::move(downSampleOnParam));
 
     return { parameters.begin(), parameters.end() };
 }
@@ -222,14 +232,15 @@ void BitCrusherAudioProcessor::updateParameters()
     sampleRateReduction = *(apvst.getRawParameterValue("sample rate"));
     blend = *(apvst.getRawParameterValue("blend"));
     masterGain = *(apvst.getRawParameterValue("master gain"));
-    reductionType = *(apvst.getRawParameterValue("reduction type"));
+    bitReductionOn = *(apvst.getRawParameterValue("bit reduction on/off"));
+    downSampleOn = *(apvst.getRawParameterValue("down sample on/off"));
 }
 
 float BitCrusherAudioProcessor::processSample(float sample, int bitMultiplier)
 {
     float effectedSample = sample;
 
-    if (reductionType == 0)
+    if (bitReductionOn == 1)
     {
         effectedSample = (float)(round((effectedSample + 1.0) * bitMultiplier));
         effectedSample = effectedSample / bitMultiplier - 1.0;
